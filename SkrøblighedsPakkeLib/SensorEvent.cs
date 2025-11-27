@@ -9,8 +9,7 @@ namespace SkrøblighedsPakkeLib
     public class SensorEvent
     {
         public int Id { get; set; }                  // Primær nøgle til database
-        public DateTime Timestamp { get; set; }      // Hvornår målingen blev taget
-        public double Acceleration { get; set; }     // Målt acceleration
+        public DateTime Timestamp { get; set; }      // Hvornår målingen blev taget - uklar 
         public double Tilt { get; set; }             // Vinkelmåling (tilt)
        
 

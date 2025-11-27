@@ -8,12 +8,18 @@ namespace SkrøblighedsPakkeLib
 {
     public class LimitProfile
     {
-        public bool IsFragile { get; set; } // Angiver om pakken er skrøbelig
+        public int Id { get; }
+        public string Name { get; }
+        public double MaxTiltDegrees { get; }
+        public bool IsFragile { get; }
 
-        // Mulighed for at ændre status via webinterface
-        public void SetFragile(bool fragile)
+        // Konstruktør sætter værdierne én gang
+        public LimitProfile(int id, string name, double maxTiltDegrees, bool isFragile)
         {
-            IsFragile = fragile;
+            Id = id;
+            Name = name;
+            MaxTiltDegrees = maxTiltDegrees;
+            IsFragile = isFragile;
         }
     }
 }
