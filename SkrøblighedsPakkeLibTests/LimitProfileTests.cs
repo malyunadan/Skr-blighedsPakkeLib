@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SkrøblighedsPakkeLib;
 using System;
 using System.Collections.Generic;
@@ -11,28 +12,31 @@ namespace SkrøblighedsPakkeLib.Tests
     [TestClass()]
     public class LimitProfileTests
     {
-        [TestMethod()]
-        public void SetFragile_souldUpdateIsFraglieToTrue()
+        [TestClass]
+        public class LimitProfileTests
         {
-            // Arrange
-            var limitProfile = new LimitProfile();
-            //act 
-            limitProfile.SetFragile(true);
-            //assert
-            Assert.IsTrue(limitProfile.IsFragile,"IsFragile should be true after calling SetFragile(true.");
+            [TestMethod]
+            public void Constructor_ShouldSetIsFragileToTrue()
+            {
+                // Arrange + Act
+                var limitProfile = new LimitProfile(1, "Fragile", 5.0, 10.0, true);
+
+                // Assert
+                Assert.IsTrue(limitProfile.IsFragile,
+                    "IsFragile should be true when constructed with isFragile = true.");
+            }
+
+            [TestMethod]
+            public void Constructor_ShouldSetIsFragileToFalse()
+            {
+                // Arrange + Act
+                var limitProfile = new LimitProfile(2, "Normal", 20.0, 45.0, false);
+
+                // Assert
+                Assert.IsFalse(limitProfile.IsFragile,
+                    "IsFragile should be false when constructed with isFragile = false.");
+            }
         }
-
-        [TestMethod()]
-        public void SetFragile_souldUpdateIsFraglieToFalse()
-        {
-            // Arrange
-            var limitProfile = new LimitProfile();
-            //act 
-            limitProfile.SetFragile(false);
-            //assert
-            Assert.IsFalse(limitProfile.IsFragile, "IsFragile should be false after calling SetFragile(false.");
-        }
-
-
     }
-}
+
+        
