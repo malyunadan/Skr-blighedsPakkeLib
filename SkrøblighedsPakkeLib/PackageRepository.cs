@@ -15,7 +15,7 @@ namespace SkrøblighedsPakkeLib
             packages.Add(package);
         }
         // Hent en pakke baseret på ID
-        public Package GetPackageById(string id)
+        public Package GetPackageById(int id)
         {
             return packages.FirstOrDefault(p => p.Id == id);
         }
@@ -27,3 +27,4 @@ namespace SkrøblighedsPakkeLib
 
     }
 }
+

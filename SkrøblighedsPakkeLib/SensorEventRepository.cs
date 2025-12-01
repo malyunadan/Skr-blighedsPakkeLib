@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
 namespace SkrøblighedsPakkeLib
 {
-    public class SensorEventRepository
+    public class SensorEventRepository : ISensorEventRepository
     {
         private readonly List<SensorEvent> sensorEvents = new List<SensorEvent>();
         // Tilføj en sensorhændelse til repository
@@ -18,6 +19,10 @@ namespace SkrøblighedsPakkeLib
         public List<SensorEvent> GetAllSensorEvents()
         {
             return sensorEvents;
+        }
+        public SensorEvent GetEventById(int id)   // ← ny metode
+        {
+            return sensorEvents.FirstOrDefault(s => s.Id == id);
         }
     }
 }
