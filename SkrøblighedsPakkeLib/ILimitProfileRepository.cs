@@ -11,7 +11,5 @@ namespace SkrøblighedsPakkeLib
         void AddLimitProfile(LimitProfile limitProfile);
         LimitProfile GetLimitProfileById(int id);
         List<LimitProfile> GetAllLimitProfiles();
-
-        List<LimitProfile> GetLimitProfilesByUserId(int userId);
     }
 }
