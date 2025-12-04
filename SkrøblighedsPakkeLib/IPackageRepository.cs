@@ -9,7 +9,7 @@ namespace SkrøblighedsPakkeLib
     public interface IPackageRepository
     {
         void AddPackage(Package package);
-        Package GetPackageById(string Id);
+        Package GetPackageById(int Id);
         List<Package> GetAllPackages();
     }
 }
