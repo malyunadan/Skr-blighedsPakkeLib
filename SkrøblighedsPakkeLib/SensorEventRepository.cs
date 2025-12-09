@@ -22,10 +22,11 @@ namespace SkrøblighedsPakkeLib
             using var connection = new SqlConnection(_connectionString);
             connection.Open();
             var command = new SqlCommand(
-                "INSERT INTO SensorEvents (Tilt, PackageId) VALUES (@Tilt, @PackageId)",
+                "INSERT INTO SensorEvents (Tilt, PackageId) VALUES (@Tilt, @PackageId, @Timestamp)",
                 connection);
             command.Parameters.AddWithValue("@Tilt", sensorEvent.Tilt);
             command.Parameters.AddWithValue("@PackageId", sensorEvent.PackageId);
+            command.Parameters.AddWithValue("@Timestamp", sensorEvent.Timestamp);
             command.ExecuteNonQuery();
         }
 
@@ -45,7 +46,7 @@ namespace SkrøblighedsPakkeLib
                     Id = Convert.ToInt32(reader["Id"]),
                     Timestamp = Convert.ToDateTime(reader["Timestamp"]),
                     Tilt = (double)Convert.ToDecimal(reader["Tilt"]),
-                    PackageId = reader["PackageId"].ToString()
+                    PackageId = Convert.ToInt32(reader["PackageId"])
                 };
             }
             return null;
@@ -67,7 +68,7 @@ namespace SkrøblighedsPakkeLib
                     Id = Convert.ToInt32(reader["Id"]),
                     Timestamp = Convert.ToDateTime(reader["Timestamp"]),
                     Tilt = (double)Convert.ToDecimal(reader["Tilt"]),
-                    PackageId = reader["PackageId"].ToString()
+                    PackageId = Convert.ToInt32(reader["PackageId"])
                 });
             }
             return result;
@@ -90,7 +91,7 @@ namespace SkrøblighedsPakkeLib
                     Id = Convert.ToInt32(reader["Id"]),
                     Timestamp = Convert.ToDateTime(reader["Timestamp"]),
                     Tilt = (double)Convert.ToDecimal(reader["Tilt"]),
-                    PackageId = reader["PackageId"].ToString()
+                    PackageId = Convert.ToInt32(reader["PackageId"])
                 });
             }
             return result;

@@ -14,6 +14,6 @@ namespace SkrøblighedsPakkeLib
 
 
         // Reference til hvilken pakke målingen hører til
-        public string PackageId { get; set; }
+        public int PackageId { get; set; }
     }
 }
