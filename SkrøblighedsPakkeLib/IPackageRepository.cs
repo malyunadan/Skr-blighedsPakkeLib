@@ -8,8 +8,9 @@ namespace SkrøblighedsPakkeLib
 {
     public interface IPackageRepository
     {
-        void AddPackage(Package package);
+        bool AddPackage(Package package);
         Package GetPackageById(int Id);
         List<Package> GetAllPackages();
+
     }
 }

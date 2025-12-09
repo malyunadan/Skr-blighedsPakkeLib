@@ -16,43 +16,61 @@ namespace SkrøblighedsPakkeLib
             _connectionString = connectionString;
         }
 
+        // Helper: Tjek om LimitProfileId findes i databasen
+        private bool LimitProfileExists(int limitProfileId)
+        {
+            using var connection = new SqlConnection(_connectionString);
+            connection.Open();
+
+            using var command = new SqlCommand("SELECT COUNT(*) FROM LimitProfiles WHERE Id = @Id", connection);
+            command.Parameters.Add("@Id", System.Data.SqlDbType.Int).Value = limitProfileId;
+
+            return (int)command.ExecuteScalar() > 0;
+        }
+
         // Tilføj en pakke til databasen
-        public void AddPackage(Package package)
+        public bool AddPackage(Package package)
         {
+            if (!LimitProfileExists(package.LimitProfileId))
+                return false; // eller throw new Exception(...) hvis du vil stoppe hårdt
+
             using var connection = new SqlConnection(_connectionString);
             connection.Open();
-            var command = new SqlCommand(
-                "INSERT INTO Packages (Id, Description, LimitProfileId) VALUES (@Id, @Description, @LimitProfileId)",
+
+            using var command = new SqlCommand(
+                "INSERT INTO Packages_TEMP (Id, Description, LimitProfileId) VALUES (@Id, @Description, @LimitProfileId)",
                 connection);
-            command.Parameters.AddWithValue("@Id", package.Id);
-            command.Parameters.AddWithValue("@Description", package.Description);
-            command.Parameters.AddWithValue("@LimitProfileId", package.LimitProfileId);
+
+            command.Parameters.Add("@Id", System.Data.SqlDbType.Int).Value = package.Id;
+            command.Parameters.Add("@Description", System.Data.SqlDbType.NVarChar, 100).Value = package.Description;
+            command.Parameters.Add("@LimitProfileId", System.Data.SqlDbType.Int).Value = package.LimitProfileId;
+
             command.ExecuteNonQuery();
+            return true;
         }
 
-        public Package GetPackageById(int Id)
-        {
-            throw new NotImplementedException();
-        }
-
-        // Hent en pakke baseret på ID (string, da NVARCHAR i SQL)
-        public Package GetPackageById(string id)
+        // Hent en pakke baseret på ID
+        public Package GetPackageById(int id)
         {
             using var connection = new SqlConnection(_connectionString);
             connection.Open();
-            var command = new SqlCommand("SELECT * FROM Packages WHERE Id = @Id", connection);
-            command.Parameters.AddWithValue("@Id", id);
+
+            using var command = new SqlCommand(
+                "SELECT Id, Description, LimitProfileId FROM Packages_TEMP WHERE Id = @Id",
+                connection);
+            command.Parameters.Add("@Id", System.Data.SqlDbType.Int).Value = id;
 
             using var reader = command.ExecuteReader();
             if (reader.Read())
             {
                 return new Package
                 {
-                    Id = Convert.ToInt32(reader["Id"].ToString()),
-                    Description = reader["Description"].ToString(),
-                    LimitProfileId = Convert.ToInt32(reader["LimitProfileId"])
+                    Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                    Description = reader.GetString(reader.GetOrdinal("Description")),
+                    LimitProfileId = reader.GetInt32(reader.GetOrdinal("LimitProfileId"))
                 };
             }
+
             return null;
         }
 
@@ -60,22 +78,26 @@ namespace SkrøblighedsPakkeLib
         public List<Package> GetAllPackages()
         {
             var result = new List<Package>();
+
             using var connection = new SqlConnection(_connectionString);
             connection.Open();
-            var command = new SqlCommand("SELECT * FROM Packages", connection);
+
+            using var command = new SqlCommand(
+                "SELECT Id, Description, LimitProfileId FROM Packages_TEMP",
+                connection);
 
             using var reader = command.ExecuteReader();
             while (reader.Read())
             {
                 result.Add(new Package
                 {
-                    Id = Convert.ToInt32(reader["Id"].ToString()),
-                    Description = reader["Description"].ToString(),
-                    LimitProfileId = Convert.ToInt32(reader["LimitProfileId"])
+                    Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                    Description = reader.GetString(reader.GetOrdinal("Description")),
+                    LimitProfileId = reader.GetInt32(reader.GetOrdinal("LimitProfileId"))
                 });
             }
+
             return result;
         }
     }
 }
-

@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Data.SqlClient;
 
 namespace SkrøblighedsPakkeLib
@@ -21,12 +18,14 @@ namespace SkrøblighedsPakkeLib
         {
             using var connection = new SqlConnection(_connectionString);
             connection.Open();
-            var command = new SqlCommand(
-                "INSERT INTO SensorEvents (Tilt, PackageId) VALUES (@Tilt, @PackageId, @Timestamp)",
+            using var command = new SqlCommand(
+                "INSERT INTO SensorEvents (Tilt, PackageId) VALUES (@Tilt, @PackageId)",
                 connection);
-            command.Parameters.AddWithValue("@Tilt", sensorEvent.Tilt);
-            command.Parameters.AddWithValue("@PackageId", sensorEvent.PackageId);
-            command.Parameters.AddWithValue("@Timestamp", sensorEvent.Timestamp);
+
+            // Use explicit types to avoid AddWithValue pitfalls
+            command.Parameters.Add(new SqlParameter("@Tilt", System.Data.SqlDbType.Float) { Value = sensorEvent.Tilt });
+            command.Parameters.Add(new SqlParameter("@PackageId", System.Data.SqlDbType.Int) { Value = sensorEvent.PackageId });
+
             command.ExecuteNonQuery();
         }
 
@@ -35,19 +34,13 @@ namespace SkrøblighedsPakkeLib
         {
             using var connection = new SqlConnection(_connectionString);
             connection.Open();
-            var command = new SqlCommand("SELECT * FROM SensorEvents WHERE Id = @Id", connection);
-            command.Parameters.AddWithValue("@Id", id);
+            using var command = new SqlCommand("SELECT * FROM SensorEvents WHERE Id = @Id", connection);
+            command.Parameters.Add(new SqlParameter("@Id", System.Data.SqlDbType.Int) { Value = id });
 
             using var reader = command.ExecuteReader();
             if (reader.Read())
             {
-                return new SensorEvent
-                {
-                    Id = Convert.ToInt32(reader["Id"]),
-                    Timestamp = Convert.ToDateTime(reader["Timestamp"]),
-                    Tilt = (double)Convert.ToDecimal(reader["Tilt"]),
-                    PackageId = Convert.ToInt32(reader["PackageId"])
-                };
+                return MapFromReader(reader);
             }
             return null;
         }
@@ -58,18 +51,12 @@ namespace SkrøblighedsPakkeLib
             var result = new List<SensorEvent>();
             using var connection = new SqlConnection(_connectionString);
             connection.Open();
-            var command = new SqlCommand("SELECT * FROM SensorEvents", connection);
+            using var command = new SqlCommand("SELECT * FROM SensorEvents", connection);
 
             using var reader = command.ExecuteReader();
             while (reader.Read())
             {
-                result.Add(new SensorEvent
-                {
-                    Id = Convert.ToInt32(reader["Id"]),
-                    Timestamp = Convert.ToDateTime(reader["Timestamp"]),
-                    Tilt = (double)Convert.ToDecimal(reader["Tilt"]),
-                    PackageId = Convert.ToInt32(reader["PackageId"])
-                });
+                result.Add(MapFromReader(reader));
             }
             return result;
         }
@@ -80,21 +67,37 @@ namespace SkrøblighedsPakkeLib
             var result = new List<SensorEvent>();
             using var connection = new SqlConnection(_connectionString);
             connection.Open();
-            var command = new SqlCommand("SELECT * FROM SensorEvents WHERE PackageId = @PackageId", connection);
-            command.Parameters.AddWithValue("@PackageId", packageId);
+            using var command = new SqlCommand("SELECT * FROM SensorEvents WHERE PackageId = @PackageId", connection);
+
+            // If PackageId is stored as int in DB, parse the incoming string or change parameter type accordingly.
+            if (!int.TryParse(packageId, out var packageIdInt))
+                throw new ArgumentException("packageId must be a numeric string when PackageId column is INT.", nameof(packageId));
+
+            command.Parameters.Add(new SqlParameter("@PackageId", System.Data.SqlDbType.Int) { Value = packageIdInt });
 
             using var reader = command.ExecuteReader();
             while (reader.Read())
             {
-                result.Add(new SensorEvent
-                {
-                    Id = Convert.ToInt32(reader["Id"]),
-                    Timestamp = Convert.ToDateTime(reader["Timestamp"]),
-                    Tilt = (double)Convert.ToDecimal(reader["Tilt"]),
-                    PackageId = Convert.ToInt32(reader["PackageId"])
-                });
+                result.Add(MapFromReader(reader));
             }
             return result;
+        }
+
+        // Small helper to map a DataReader row to SensorEvent (avoid duplication)
+        private static SensorEvent MapFromReader(SqlDataReader reader)
+        {
+            var Id = reader.GetOrdinal("Id");
+            var Timestamp = reader.GetOrdinal("Timestamp");
+            var Tilt = reader.GetOrdinal("Tilt");
+            var packageId = reader.GetOrdinal("PackageId");
+
+            return new SensorEvent
+            {
+                Id = reader.GetInt32(Id),
+                Timestamp = reader.GetDateTime(Timestamp),
+                Tilt = reader.GetDouble(Tilt),
+                PackageId = reader.GetInt32(packageId)
+            };
         }
     }
 }

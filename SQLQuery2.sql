@@ -1,0 +1,1 @@
+﻿ALTER TABLE SensorEvents ALTER COLUMN Tilt FLOAT;
