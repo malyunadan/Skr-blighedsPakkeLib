@@ -62,18 +62,13 @@ namespace SkrøblighedsPakkeLib
         }
 
         // Hent alle events for en bestemt pakke
-        public List<SensorEvent> GetEventsByPackageId(string packageId)
+        public List<SensorEvent> GetEventsByPackageId(int packageId)
         {
             var result = new List<SensorEvent>();
             using var connection = new SqlConnection(_connectionString);
             connection.Open();
             using var command = new SqlCommand("SELECT * FROM SensorEvents WHERE PackageId = @PackageId", connection);
-
-            // If PackageId is stored as int in DB, parse the incoming string or change parameter type accordingly.
-            if (!int.TryParse(packageId, out var packageIdInt))
-                throw new ArgumentException("packageId must be a numeric string when PackageId column is INT.", nameof(packageId));
-
-            command.Parameters.Add(new SqlParameter("@PackageId", System.Data.SqlDbType.Int) { Value = packageIdInt });
+            command.Parameters.Add(new SqlParameter("@PackageId", System.Data.SqlDbType.Int) { Value = packageId });
 
             using var reader = command.ExecuteReader();
             while (reader.Read())

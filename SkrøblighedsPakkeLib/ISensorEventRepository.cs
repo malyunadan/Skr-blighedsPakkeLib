@@ -11,5 +11,6 @@ namespace SkrøblighedsPakkeLib
         void AddSensorEvent(SensorEvent sensorEvent);
         List<SensorEvent> GetAllSensorEvents();
         SensorEvent GetEventById(int id);
+        public List<SensorEvent> GetEventsByPackageId(int packageId);
     }
 }
